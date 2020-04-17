@@ -13,6 +13,7 @@
 #include <chrono>
 #include <functional>
 #include <vector>
+#include <pthread.h>
 
 struct Position{
 	double x;
@@ -62,26 +63,44 @@ struct AStarAlgorithmParameters{
 	Position start;
 	Position end;
 	int gridSize;
+	pthread_t* assignedThread = new pthread_t;
+	int requestID = -1;
 	milliseconds creationTime;
 	bool operator==(const AStarAlgorithmParameters &rhs){
 		return start.x == rhs.start.x && start.y == rhs.start.y && end.x == rhs.end.x && end.y == rhs.end.y && gridSize == rhs.gridSize;
 	}
 	AStarAlgorithmParameters(double startX, double startY, double endX, double endY, int gridSize): start(Position{startX, startY}), end(Position{endX, endY}), gridSize(gridSize){
+
 		creationTime = now();
+
+		requestID = rand() % 100000 + 10;
+		while(requestIDAlreadyUsed(requestID)){ requestID++; }
+
 		previousInstances.push_back(this);
 
 		clearExpiredInstances();
 	};
+	int getRequestID(){
+		return requestID;
+	}
 private:
 	inline static std::vector<AStarAlgorithmParameters*> previousInstances;
 	static void clearExpiredInstances(){
 		for(AStarAlgorithmParameters* instance : previousInstances){
 			if(instance->hasExpired()){
 				previousInstances.erase(std::remove(previousInstances.begin(), previousInstances.end(), instance), previousInstances.end());
+				pthread_cancel(*instance->assignedThread);
+				delete instance->assignedThread;
 				delete instance;
 				break;
 			}
 		}
+	}
+	static int requestIDAlreadyUsed(int requestID){
+		for(AStarAlgorithmParameters* instance : previousInstances){
+			if(instance->requestID == requestID) return true;
+		}
+		return false;
 	}
 	milliseconds now(){
 		return duration_cast<milliseconds>(system_clock::now().time_since_epoch());

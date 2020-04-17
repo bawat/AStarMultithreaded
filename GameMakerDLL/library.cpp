@@ -2,6 +2,7 @@
 #include <iostream>
 #include <iomanip>
 #include <string>
+#include <chrono>
 #include "DSMap.cpp"
 #include "CollisionBox.cpp"
 #include "DataTypes.cpp"
@@ -99,6 +100,7 @@ void* calculateAStar(void* input){
 		current = current->origin;
 	}
 	returnMap.addDouble("pathWaypoints", index);
+	returnMap.addDouble("requestID", desiredPath.getRequestID());
 	returnMap.sendToGMS2();
 
 	//Clear up the memory
@@ -110,25 +112,25 @@ void* calculateAStar(void* input){
 	return nullptr;
 }
 
-pthread_t startNewThread(AStarAlgorithmParameters* desiredPath){
-	/* this variable is our reference to the second thread */
-	pthread_t new_thread;
-
+pthread_t* startNewThread(AStarAlgorithmParameters* desiredPath){
 	/* Create an extra thread which executes executeAsync */
-	if(pthread_create(&new_thread, nullptr, calculateAStar, desiredPath)) {
+	if(pthread_create(desiredPath->assignedThread, nullptr, calculateAStar, desiredPath)) {
 		std::cout << "Error creating thread" << std::endl;
 	}
 
-	return new_thread;
+	return desiredPath->assignedThread;
 }
 
+/*
+ * Returns a random handle from 10 -> 100010;
+ */
 fn_export double asyncAStarDistance(double startX, double startY, double endX, double endY, double gridSize){
 	AStarAlgorithmParameters* desiredPath = new AStarAlgorithmParameters(startX, startY, endX, endY, (int)gridSize);
+	int handleID = desiredPath->getRequestID();
 
-	pthread_detach(startNewThread(desiredPath));
-	//calculateAStar(&desiredPath);
+	pthread_detach(*startNewThread(desiredPath));
 
-	return 10.0;
+	return handleID;
 }
 
 int main(){
@@ -386,6 +388,9 @@ int main(){
 	registerCollisionBox(100001.00,  0.00,  0.00,  64.00,  64);
 
 	asyncAStarDistance(544.00, 864.00, 729.09, 543.59, 32.00);
+
+	int retVal = 20;
+	pthread_exit(&retVal);//End the main method and return a value, but keep the process loaded until all threads have finished execution.
 
 	return 0;
 }
