@@ -92,7 +92,6 @@ private:
 				pthread_cancel(*instance->assignedThread);
 				delete instance->assignedThread;
 				delete instance;
-				break;
 			}
 		}
 	}
@@ -106,7 +105,7 @@ private:
 		return duration_cast<milliseconds>(system_clock::now().time_since_epoch());
 	}
 	bool hasExpired(){
-		return duration_cast<milliseconds>(now() - creationTime).count() > 30000;
+		return duration_cast<milliseconds>(now() - creationTime).count() > 3000;
 	}
 };
 

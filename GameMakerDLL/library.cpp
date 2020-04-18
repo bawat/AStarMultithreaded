@@ -93,7 +93,7 @@ void* calculateAStar(void* input){
 	DSMap returnMap{};
 	int index = 0;
 	for(; current->pos != desiredPath.start; index++){
-		std::cout << "x:" << current->pos.x << " y:" << current->pos.y << endl;
+		//std::cout << "x:" << current->pos.x << " y:" << current->pos.y << endl;
 		returnMap
 			.addDouble("position" + to_string(index) + "valueX", current->pos.x)
 			.addDouble("position" + to_string(index) + "valueY", current->pos.y);
