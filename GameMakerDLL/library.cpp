@@ -4,8 +4,8 @@
 #include <string>
 #include <chrono>
 #include "DSMap.cpp"
-#include "CollisionBox.cpp"
 #include "DataTypes.cpp"
+#include "CollisionBox.cpp"
 #include "DijkstraPriorityQueue.cpp"
 
 #define fn_export extern "C" __declspec (dllexport)
@@ -23,7 +23,7 @@ fn_export double registerCollisionBox(double instanceID, double x1, double y1, d
 }
 
 bool attemptAddToVisitList(NodeProperties* toAdd, DijkstraPriorityQueue& nodesToVisit,  std::unordered_set<NodeProperties, KeyHasher>& visitedNodes){
-	if(CollisionBox::pointCollision(toAdd->pos)) return false;
+	if(CollisionBox::pointCollision(&toAdd->pos)) return false;
 
 	//If we've already been here, we shouldn't process this node again
 	if(visitedNodes.find(*toAdd) != visitedNodes.end()) return false;
@@ -60,7 +60,7 @@ void* calculateAStar(void* input){
 	};
 
 	int iterations = 0;
-	while(!current->pos.isClosestGridPositionTo(desiredPath.end, gridSize)){
+	while(current->pos.distanceTo(desiredPath.end) > gridSize && iterations < 1000){
 
 		for(auto nextDirection : nextDirections){
 			Node* northernNode = new Node(nextDirection, gridSize, current, goal);
@@ -72,7 +72,9 @@ void* calculateAStar(void* input){
 		NodeProperties* foundNode = nodesToVisit.pop();
 		visitedNodes.insert(*foundNode);
 		current = foundNode;
-		iterations++;
+		if(iterations++ % 100 == 0 && iterations > 50){
+			std::cout << "Request " << desiredPath.requestID << " reached "  << iterations << " iterations. Start x" << desiredPath.start.x << " y" << desiredPath.start.y << ". End x" << desiredPath.end.x << " y" << desiredPath.end.y << std::endl;
+		}
 	}
 
 	std::cout << "AStar Finished running this many iterations: " << iterations << std::endl;

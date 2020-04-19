@@ -7,56 +7,16 @@
 
 #ifndef DATATYPES_CPP_
 #define DATATYPES_CPP_
-#include <cmath>
+
 #include <unordered_set>
 #include <iostream>
 #include <chrono>
 #include <functional>
 #include <vector>
 #include <pthread.h>
+#include "CollisionBox.cpp"
+#include "Position.h"
 
-struct Position{
-	double x;
-	double y;
-
-	Position(double x, double y):x{x},y{y} {}
-	double distanceTo(Position other){
-		return sqrt(pow(x - other.x, 2 ) + pow(y - other.y, 2));
-	}
-	bool isClosestGridPositionTo(Position other, int gridSize){
-		return abs(x - other.x) < gridSize && abs(y - other.y) < gridSize;
-	}
-	bool operator==(const Position &other) const{
-		return x == other.x && y == other.y;
-	}
-	bool operator!=(const Position &other) const{
-		return !(*this == other);
-	}
-	static Position north(Position start, double distance){
-		return Position{start.x, start.y - distance};
-	}
-	static Position northEast(Position start, double distance){
-		return Position{start.x + distance, start.y - distance};
-	}
-	static Position east(Position start, double distance){
-		return Position{start.x + distance, start.y};
-	}
-	static Position southEast(Position start, double distance){
-		return Position{start.x + distance, start.y + distance};
-	}
-	static Position south(Position start, double distance){
-		return Position{start.x, start.y + distance};
-	}
-	static Position southWest(Position start, double distance){
-		return Position{start.x - distance, start.y + distance};
-	}
-	static Position west(Position start, double distance){
-		return Position{start.x - distance, start.y};
-	}
-	static Position northWest(Position start, double distance){
-		return Position{start.x - distance, start.y - distance};
-	}
-};
 using namespace std::chrono;
 
 struct AStarAlgorithmParameters{
@@ -69,7 +29,7 @@ struct AStarAlgorithmParameters{
 	bool operator==(const AStarAlgorithmParameters &rhs){
 		return start.x == rhs.start.x && start.y == rhs.start.y && end.x == rhs.end.x && end.y == rhs.end.y && gridSize == rhs.gridSize;
 	}
-	AStarAlgorithmParameters(double startX, double startY, double endX, double endY, int gridSize): start(Position{startX, startY}), end(Position{endX, endY}), gridSize(gridSize){
+	AStarAlgorithmParameters(double startX, double startY, double endX, double endY, int gridSize): start(findClearArea(startX, startY, gridSize)), end(findClearArea(endX, endY, gridSize)), gridSize(gridSize){
 
 		creationTime = now();
 
@@ -84,6 +44,23 @@ struct AStarAlgorithmParameters{
 		return requestID;
 	}
 private:
+	Position findClearArea(double x, double y, int gridSize){
+
+		if(!CollisionBox::pointCollision(x, y)) return Position{x, y};
+
+		if(!CollisionBox::pointCollision(x + gridSize, y - gridSize)) return Position{x + gridSize, y - gridSize};
+		if(!CollisionBox::pointCollision(x, y - gridSize)) return Position{x, y - gridSize};
+		if(!CollisionBox::pointCollision(x - gridSize, y - gridSize)) return Position{x - gridSize, y - gridSize};
+
+		if(!CollisionBox::pointCollision(x + gridSize, y)) return Position{x + gridSize, y};
+		if(!CollisionBox::pointCollision(x - gridSize, y)) return Position{x - gridSize, y};
+
+		if(!CollisionBox::pointCollision(x + gridSize, y + gridSize)) return Position{x + gridSize, y + gridSize};
+		if(!CollisionBox::pointCollision(x, y + gridSize)) return Position{x, y + gridSize};
+		if(!CollisionBox::pointCollision(x - gridSize, y + gridSize)) return Position{x - gridSize, y + gridSize};
+
+		return Position{x, y};
+	}
 	inline static std::vector<AStarAlgorithmParameters*> previousInstances;
 	static void clearExpiredInstances(){
 		for(AStarAlgorithmParameters* instance : previousInstances){

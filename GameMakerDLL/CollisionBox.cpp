@@ -1,13 +1,16 @@
+#ifndef COLLISIONBOX_CPP_
+#define COLLISIONBOX_CPP_
+
 #include <vector>
 #include <algorithm>
-
-#include "DataTypes.cpp"
+#include "Position.h"
 
 using namespace std;
 /*
  * Used to represent the map's state.
  * Handles collisions.
  */
+
 class CollisionBox{
 	private:
 		inline static vector<CollisionBox> listOfInstances;
@@ -18,11 +21,11 @@ class CollisionBox{
 			listOfInstances.push_back(*this);
 		}
 	public:
-		static bool pointCollision(Position pos){
-			return pointCollision(pos.x, pos.y);
+		static bool pointCollision(Position* pos){
+			return pointCollision(pos->x, pos->y);
 		}
 		static bool pointCollision(double x, double y){
-			for(auto instance : listOfInstances){
+			for(CollisionBox instance : listOfInstances){
 				if(instance.containsPoint(x, y)) return true;
 			}
 
@@ -53,3 +56,4 @@ class CollisionBox{
 };
 
 
+#endif /* COLLISIONBOX_CPP_ */
