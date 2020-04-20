@@ -59,8 +59,9 @@ void* calculateAStar(void* input){
 			Position::northWest
 	};
 
+	int maxIterations = 1000;
 	int iterations = 0;
-	while(current->pos.distanceTo(desiredPath.end) > gridSize && iterations < 1000){
+	while(current->pos.distanceTo(desiredPath.end) > gridSize && iterations < maxIterations){
 
 		for(auto nextDirection : nextDirections){
 			Node* northernNode = new Node(nextDirection, gridSize, current, goal);
@@ -93,6 +94,7 @@ void* calculateAStar(void* input){
 	}*/
 
 	DSMap returnMap{};
+	returnMap.addDouble("timedOut", iterations == maxIterations);
 	int index = 0;
 	for(; current->pos != desiredPath.start; index++){
 		//std::cout << "x:" << current->pos.x << " y:" << current->pos.y << endl;
