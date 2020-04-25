@@ -54,6 +54,7 @@ void* calculateAStar(void* input){
 			Position::northEast,
 			Position::east,
 			Position::southEast,
+			Position::south,
 			Position::southWest,
 			Position::west,
 			Position::northWest
