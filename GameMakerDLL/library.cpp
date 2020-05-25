@@ -51,13 +51,9 @@ void* calculateAStar(void* input){
 
 	const auto nextDirections = {
 			Position::north,
-			Position::northEast,
 			Position::east,
-			Position::southEast,
 			Position::south,
-			Position::southWest,
-			Position::west,
-			Position::northWest
+			Position::west
 	};
 
 	int maxIterations = 1000;
