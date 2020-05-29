@@ -32,7 +32,14 @@ bool attemptAddToVisitList(NodeProperties* toAdd, DijkstraPriorityQueue& nodesTo
 	return true;
 }
 
-//TODO ADD CASE WHERE WE'RE STUCK AND CANT FIND ANYMORE NODES TO VISIT
+void cleanUpMemory(std::vector<NodeProperties*> instancesToDelete){
+	//Clear up the memory
+	while(!instancesToDelete.empty()) {
+		delete instancesToDelete.back();
+		instancesToDelete.pop_back();
+	}
+}
+
 void* calculateAStar(void* input){
 
 	std::cout << "AStar Began running" << std::endl;
@@ -51,9 +58,13 @@ void* calculateAStar(void* input){
 
 	const auto nextDirections = {
 			Position::north,
+			//Position::northEast,
 			Position::east,
+			//Position::southEast,
 			Position::south,
+			//Position::southWest,
 			Position::west
+			//Position::northWest
 	};
 
 	int maxIterations = 1000;
@@ -64,6 +75,13 @@ void* calculateAStar(void* input){
 			Node* northernNode = new Node(nextDirection, gridSize, current, goal);
 			attemptAddToVisitList(northernNode, nodesToVisit, visitedNodes);
 			instancesToDelete.push_back(northernNode);
+		}
+
+		//Sometime zombies can get stuck within/next to each other? Either way, need to check we aren't popping an empty queue, else it crashes the game unexpectedly.
+		if(nodesToVisit.empty()){
+			std::cout << "Failed to find an A* path." << std::endl;
+			cleanUpMemory(instancesToDelete);
+			return nullptr;
 		}
 
 		//Go to most promising position
@@ -84,12 +102,6 @@ void* calculateAStar(void* input){
 		std::cout << "And Loop Condition was " << !current->pos.isClosestGridPositionTo(desiredPath.end, gridSize) << std::endl;
 	}
 
-	/*
-	while(current->pos != desiredPath.start){
-		std::cout << "x:" << current->pos.x << " y:" << current->pos.y << endl;
-		current = current->origin;
-	}*/
-
 	DSMap returnMap{};
 	returnMap.addDouble("timedOut", iterations == maxIterations);
 	int index = 0;
@@ -104,12 +116,7 @@ void* calculateAStar(void* input){
 	returnMap.addDouble("requestID", desiredPath.getRequestID());
 	returnMap.sendToGMS2();
 
-	//Clear up the memory
-	while(!instancesToDelete.empty()) {
-		delete instancesToDelete.back();
-		instancesToDelete.pop_back();
-	}
-
+	cleanUpMemory(instancesToDelete);
 	return nullptr;
 }
 
@@ -128,6 +135,8 @@ pthread_t* startNewThread(AStarAlgorithmParameters* desiredPath){
 fn_export double asyncAStarDistance(double startX, double startY, double endX, double endY, double gridSize){
 	AStarAlgorithmParameters* desiredPath = new AStarAlgorithmParameters(startX, startY, endX, endY, (int)gridSize);
 	int handleID = desiredPath->getRequestID();
+
+	std::cout << "ThreadID: " << handleID << "line " << __LINE__ << std::endl;
 
 	pthread_detach(*startNewThread(desiredPath));
 
