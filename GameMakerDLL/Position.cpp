@@ -13,7 +13,7 @@ double Position::distanceTo(Position other){
 	return sqrt(pow(x - other.x, 2 ) + pow(y - other.y, 2));
 }
 bool Position::isClosestGridPositionTo(Position other, int gridSize){
-	return abs(x - other.x) < gridSize && abs(y - other.y) < gridSize;
+	return abs(x - other.x) < gridSize/2.0 && abs(y - other.y) < gridSize/2.0;
 }
 bool Position::operator==(const Position &other) const{
 	return x == other.x && y == other.y;
