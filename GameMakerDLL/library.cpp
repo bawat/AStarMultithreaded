@@ -69,7 +69,7 @@ void* calculateAStar(void* input){
 
 	int maxIterations = 1000;
 	int iterations = 0;
-	while(current->pos.distanceTo(desiredPath.end) > gridSize && iterations < maxIterations){
+	while(current->pos.distanceTo(desiredPath.end) > gridSize/2.0 && iterations < maxIterations){
 
 		for(auto nextDirection : nextDirections){
 			Node* northernNode = new Node(nextDirection, gridSize, current, goal);
