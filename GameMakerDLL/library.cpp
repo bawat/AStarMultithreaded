@@ -80,6 +80,12 @@ void* calculateAStar(void* input){
 		//Sometime zombies can get stuck within/next to each other? Either way, need to check we aren't popping an empty queue, else it crashes the game unexpectedly.
 		if(nodesToVisit.empty()){
 			std::cout << "Failed to find an A* path." << std::endl;
+
+			DSMap returnMap{};
+			returnMap.addDouble("unableToFindPath", true);
+			returnMap.addDouble("requestID", desiredPath.getRequestID());
+			returnMap.sendToGMS2();
+
 			cleanUpMemory(instancesToDelete);
 			return nullptr;
 		}
@@ -103,6 +109,8 @@ void* calculateAStar(void* input){
 	}
 
 	DSMap returnMap{};
+	returnMap.addDouble("unableToFindPath", false);
+	returnMap.addDouble("requestID", desiredPath.getRequestID());
 	returnMap.addDouble("timedOut", iterations == maxIterations);
 	int index = 0;
 	for(; current->pos != desiredPath.start; index++){
@@ -113,7 +121,6 @@ void* calculateAStar(void* input){
 		current = current->origin;
 	}
 	returnMap.addDouble("pathWaypoints", index);
-	returnMap.addDouble("requestID", desiredPath.getRequestID());
 	returnMap.sendToGMS2();
 
 	cleanUpMemory(instancesToDelete);
