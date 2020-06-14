@@ -22,6 +22,10 @@ fn_export double registerCollisionBox(double instanceID, double x1, double y1, d
 	return 0;
 }
 
+fn_export double unregisterCollisionBox(double instanceID){
+	return CollisionBox::deleteByID((int)instanceID);
+}
+
 bool attemptAddToVisitList(NodeProperties* toAdd, DijkstraPriorityQueue& nodesToVisit,  std::unordered_set<NodeProperties, KeyHasher>& visitedNodes){
 	if(CollisionBox::pointCollision(&toAdd->pos)) return false;
 

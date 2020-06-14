@@ -38,6 +38,15 @@ class CollisionBox{
 			CollisionBox newBox{instanceID, x1, y1, x2, y2};
 			return newBox;
 		}
+		static bool deleteByID(int instanceID){
+			for(auto instance : listOfInstances){
+				if(instance.instanceID == instanceID) {
+					instance.remove();
+					return true;
+				}
+			}
+			return false;
+		}
 		bool containsPoint(double x, double y){
 			return (x>=x1&&x<=x2) && (y>=y1&&y<=y2);
 		}
